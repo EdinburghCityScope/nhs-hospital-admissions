@@ -37,7 +37,11 @@
       "type": "string",
       "required": true
     },
-    "count": {
+    "measure": {
+      "type": "string",
+      "required": true
+    },
+    "value": {
       "type": "number",
       "required": true
     }

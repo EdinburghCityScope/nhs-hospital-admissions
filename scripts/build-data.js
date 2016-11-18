@@ -31,7 +31,7 @@ edinburghcityscopeUtils.fetchGovBoundaries('dz-2001', (err, boundaries, zones) =
 function interrogateSPARQL(zones) {
     var queries = [];
     var batch = queue({concurrency: 1});
-    var chunk_size = 15;
+    var chunk_size = 1;
     var records = [];
     var fields = [];
 
@@ -73,13 +73,12 @@ function interrogateSPARQL(zones) {
             PREFIX dim: <http://statistics.gov.scot/def/dimension/>
             PREFIX area: <http://statistics.gov.scot/id/statistical-geography/>
             PREFIX data: <http://statistics.gov.scot/data/>
-            PREFIX prop: <http://statistics.gov.scot/def/measure-properties/>
             
-            SELECT ?year ?zone ?age ?gender ?admission ?count
+            SELECT ?year ?zone ?age ?gender ?admission ?measure ?value
             WHERE {
                 ?s qb:dataSet data:hospital-admissions ;
-                   qb:measureType prop:count ;
-                   prop:count ?count ;
+                   qb:measureType ?m ;
+                   ?m ?value ;
                    dim:gender ?g ;
                    dim:admissionType ?t ;
                    dim:age ?a ;
@@ -90,9 +89,10 @@ function interrogateSPARQL(zones) {
                 ?t rdfs:label ?admission .
                 ?a rdfs:label ?age .
                 ?y rdfs:label ?year .
-                FILTER ( 
-                    ${zone_chunk.map(zone => `?z = <${zone}>`).join(' || ')}
-                )
+                ?m rdfs:label ?measure .
+                FILTER ( ?z IN (
+                    ${zone_chunk.map(zone => `<${zone}>`).join(', ')}
+                ))
             }`);
 
         batch.push(fetchChunk);
